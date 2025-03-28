@@ -1,41 +1,46 @@
 from abc import ABC, abstractmethod
 
 class Promotion(ABC):
-    """Abstract base class for all promotions."""
+    """Abstract class for all promotions."""
 
     def __init__(self, name):
         self.name = name
 
     @abstractmethod
     def apply_promotion(self, product, quantity):
-        """Calculate the price after applying the promotion."""
         pass
 
 
+class SecondHalfPrice(Promotion):
+    """Second item at half price."""
+
+    def __init__(self, name):
+        super().__init__(name)
+
+    def apply_promotion(self, product, quantity):
+        full_price_items = quantity // 2
+        half_price_items = quantity - full_price_items
+        return (full_price_items * product.price) + (half_price_items * product.price * 0.5)
+
+
+class ThirdOneFree(Promotion):
+    """Buy 2, get 1 free."""
+
+    def __init__(self, name):
+        super().__init__(name)
+
+    def apply_promotion(self, product, quantity):
+        free_items = quantity // 3
+        return (quantity - free_items) * product.price
+
+
 class PercentDiscount(Promotion):
-    """Applies a percentage discount to the product."""
+    """Apply a percentage discount."""
 
     def __init__(self, name, percent):
         super().__init__(name)
         self.percent = percent
 
     def apply_promotion(self, product, quantity):
-        discount_price = product.price * (1 - self.percent / 100)
-        return discount_price * quantity
-
-
-class SecondHalfPrice(Promotion):
-    """Applies a discount where the second item is half price."""
-
-    def apply_promotion(self, product, quantity):
-        full_price_items = quantity // 2 + quantity % 2
-        half_price_items = quantity // 2
-        return (full_price_items * product.price) + (half_price_items * product.price * 0.5)
-
-
-class ThirdOneFree(Promotion):
-    """Applies a buy 2, get 1 free promotion."""
-
-    def apply_promotion(self, product, quantity):
-        full_price_items = quantity - (quantity // 3)
-        return full_price_items * product.price
+        discount = (product.price * self.percent) / 100
+        return (product.price - discount) * quantity

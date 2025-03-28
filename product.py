@@ -35,3 +35,32 @@ class Product:
             self.is_active = False
 
         return total_cost
+
+
+class NonStockedProduct(Product):
+    """Product that is not stocked, always has quantity 0."""
+
+    def __init__(self, name, price):
+        super().__init__(name, price, 0)
+
+    def show(self):
+        """Override show to indicate no stock."""
+        return f"{self.name} - ${self.price} (Non-stocked)"
+
+    def purchase(self, quantity):
+        """No purchase possible for non-stocked products."""
+        raise ValueError("Cannot purchase non-stocked products.")
+
+
+class LimitedProduct(Product):
+    """Product that has a limited purchase quantity."""
+
+    def __init__(self, name, price, quantity, maximum):
+        super().__init__(name, price, quantity)
+        self.maximum = maximum
+
+    def purchase(self, quantity):
+        """Override purchase to enforce the maximum limit."""
+        if quantity > self.maximum:
+            raise ValueError(f"Cannot purchase more than {self.maximum} of this product.")
+        return super().purchase(quantity)
