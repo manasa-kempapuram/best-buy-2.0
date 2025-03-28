@@ -1,59 +1,37 @@
 class Product:
-    """Represents a product with name, price, and quantity."""
+    """Represents a product in the store."""
 
     def __init__(self, name, price, quantity):
         if not name or price < 0:
-            raise ValueError("Invalid product details.")
+            raise ValueError("Invalid product name or price.")
 
         self.name = name
         self.price = price
         self.quantity = quantity
-        self.is_active = quantity > 0
+        self.is_active = True
+        self.promotion = None  # New attribute for promotions
 
-    def purchase(self, amount):
-        """Handles product purchase and modifies quantity."""
-        if amount > self.quantity:
+    def set_promotion(self, promotion):
+        """Assign a promotion to the product."""
+        self.promotion = promotion
+
+    def show(self):
+        """Display product details including promotion (if any)."""
+        promotion_text = f" (Promotion: {self.promotion.name})" if self.promotion else ""
+        return f"{self.name} - ${self.price} ({self.quantity} in stock){promotion_text}"
+
+    def purchase(self, quantity):
+        """Process a purchase, applying promotions if available."""
+        if quantity > self.quantity:
             raise ValueError("Not enough stock available.")
-        self.quantity -= amount
+
+        if self.promotion:
+            total_cost = self.promotion.apply_promotion(self, quantity)
+        else:
+            total_cost = self.price * quantity
+
+        self.quantity -= quantity
         if self.quantity == 0:
             self.is_active = False
-        return self.price * amount
 
-    def show(self):
-        """Displays product details."""
-        return f"{self.name}, Price: ${self.price}, Quantity: {self.quantity}"
-
-
-# 🔹 **New Class: NonStockedProduct**
-class NonStockedProduct(Product):
-    """Represents a product with no stock tracking (e.g., software licenses)."""
-
-    def __init__(self, name, price):
-        super().__init__(name, price, quantity=0)  # Quantity is always 0
-
-    def purchase(self, amount):
-        """NonStockedProduct can always be purchased (quantity isn't tracked)."""
-        return self.price * amount
-
-    def show(self):
-        """Displays product details for non-stocked items."""
-        return f"{self.name} (Non-Stocked), Price: ${self.price}"
-
-
-# 🔹 **New Class: LimitedProduct**
-class LimitedProduct(Product):
-    """Represents a product with a purchase limit per order (e.g., shipping fees)."""
-
-    def __init__(self, name, price, quantity, maximum):
-        super().__init__(name, price, quantity)
-        self.maximum = maximum  # Max quantity per purchase
-
-    def purchase(self, amount):
-        """Ensures the product cannot be bought above the max limit in one order."""
-        if amount > self.maximum:
-            raise ValueError(f"Cannot buy more than {self.maximum} per order.")
-        return super().purchase(amount)
-
-    def show(self):
-        """Displays product details for limited-stock items."""
-        return f"{self.name} (Limited - Max {self.maximum}/order), Price: ${self.price}, Quantity: {self.quantity}"
+        return total_cost
